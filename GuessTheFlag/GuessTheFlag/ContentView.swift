@@ -8,17 +8,228 @@
 import SwiftUI
 
 struct ContentView: View {
+    // Start with a shuffled array
+    @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
+    @State private var correctAnswer = Int.random(in: 0...2)
+    
+    @State private var showingScore = false
+    
+    @State private var scoreTitle = ""
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            // Apply the color behind the VStacks
+            Color.blue
+                .ignoresSafeArea()
+            
+            VStack(spacing: 30){
+                VStack {
+                    Text("Tap the flag of")
+                        .foregroundStyle(.white)
+                    Text(countries[correctAnswer])
+                        .foregroundStyle(.white)
+                }
+                
+                ForEach(0..<3) { number in
+                    // When the button is tapped execute the action
+                    Button {
+                        flagTapped(number)
+                    } label: {
+                        Image(countries[number])
+                    }
+                    .alert(scoreTitle, isPresented: $showingScore) {
+                        Button("Continue", action: askQuestion)
+                    } message: {
+                        Text("Your score is ???")
+                    }
+                }
+            }
         }
-        .padding()
+    }
+    
+    // Function to manage the tap on the flag
+    func flagTapped(_ number: Int) {
+        // correctAnswer can be checked as it is global to the ContentView
+        if number == correctAnswer {
+            scoreTitle = "Correct"
+        } else {
+            scoreTitle = "Wrong"
+        }
+        
+        showingScore = true
+    }
+    
+    // Function to re-shuffle the array and set a new correct answer for a new game
+    func askQuestion() {
+        countries.shuffle()
+        correctAnswer = Int.random(in: 0...2)
     }
 }
 
 #Preview {
     ContentView()
+}
+
+struct TestsView: View {
+    @State private var showingAlert = false
+    
+    var body: some View {
+        VStack {
+            // The stack is processed with the given order, so the first element will be at the top.
+            Image(systemName: "globe")
+                .imageScale(.large)
+                .foregroundStyle(.tint)
+            Text("Hello, world!")
+        }
+         .padding()
+         
+        // In this case, Swift can realize on its own to use a VStack, but if we prefer we can explicit the VStack
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Hello world!")
+            Text("This is another text view")
+        }
+        
+        HStack(spacing: 20) {
+            Text("Hello world!")
+            Text("This is inside a stack")
+        }
+        
+        VStack {
+            Text("First")
+            Text("Second")
+            Text("Third")
+            Spacer()
+        }
+        
+        VStack {
+            // 1 third of the space at the top, and 2 thirds at the bottom
+            Spacer()
+            Text("First")
+            Text("Second")
+            Text("Third")
+            Spacer()
+            Spacer()
+        }
+        
+        ZStack(alignment: .top) {
+            Text("Hello world!")
+            Text("This is inside a ZStack")
+        }
+       
+        // 3x3 grid test
+        VStack {
+            HStack {
+                Text("1")
+                Text("2")
+                Text("3")
+            }
+            HStack {
+                Text("4")
+                Text("5")
+                Text("6")
+            }
+            HStack {
+                Text("7")
+                Text("8")
+                Text("9")
+            }
+        }
+        
+        ZStack {
+            // This will permit the entire ZStack to be red, instead of the only text background -> we can also specify a frame
+            // The .infinity value will allow to take all the free space if present
+            Color.red
+                // .frame(width: 200, height: 200)
+                .frame(minWidth: 200, maxWidth: .infinity, minHeight: 200, maxHeight: .infinity)
+            Text("Your content")
+        }
+        .ignoresSafeArea()
+        
+        ZStack {
+            VStack(spacing: 0) {
+                Color.red
+                Color.blue
+            }
+            
+            Text("Your content")
+                .foregroundStyle(.secondary)
+                .padding(50)
+                .background(.ultraThinMaterial)
+        }
+        .ignoresSafeArea()
+        
+        LinearGradient(colors: [.white, .black], startPoint: .top, endPoint: .bottom)
+        
+        LinearGradient(stops: [
+            // The .init can be used instead of Gradient.stop, Swift will understand it on its own
+            .init(color: .white, location: 0.45),
+            .init(color: .black, location: 0.55)
+        ], startPoint: .top, endPoint: .bottom)
+        
+        RadialGradient(colors: [.red, .blue], center: .center, startRadius: 20, endRadius: 200)
+        
+        AngularGradient(colors: [.red, .yellow, .green, .blue, .purple, .red], center: .center)
+        
+        ZStack {
+            Text("Your content")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundStyle(.white)
+                .background(.red.gradient)
+        }
+        .ignoresSafeArea()
+        
+        VStack() {
+            Button("Button 1") { }
+                .buttonStyle(.bordered)
+            Button("Button 2", role: .destructive) { }
+                .buttonStyle(.bordered)
+            Button("Button 3") { }
+                .buttonStyle(.borderedProminent)
+                .tint(.mint)
+            Button("Button 4", role: .destructive) { }
+                .buttonStyle(.borderedProminent)
+        }
+        
+        // Completely custom button
+        Button {
+            print("Edit button was tapped")
+        } label: {
+          Text("Tap me!")
+                .padding()
+                .foregroundStyle(.white)
+                .background(.red)
+        }
+        
+        // Button with only image
+        Button {
+            print("Edit button was tapped")
+        } label: {
+            Image(systemName: "pencil")
+        }
+        
+        // Simple button with image and text
+        Button("Edit", systemImage: "pencil") {
+            print("Edit button was tapped!")
+        }
+        
+        // Custom button with image + text
+        Button {
+            print("Edit button was tapped")
+        } label: {
+            Label("Edit", systemImage: "pencil")
+                .padding()
+                .foregroundStyle(.white)
+                .background(.red)
+        }
+        
+        // Simple button triggering an alert
+        Button("Show Alert") {
+            showingAlert = true
+        }
+        .alert("Important message", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Please read this.")
+        }
+    }
 }
