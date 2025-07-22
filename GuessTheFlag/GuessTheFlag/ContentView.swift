@@ -18,32 +18,68 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Apply the color behind the VStacks
-            Color.blue
-                .ignoresSafeArea()
+            // Apply a radial gradient with two colors starting at the same location
+            // We define the colors with custom shades so that are prettier
+            RadialGradient(stops: [
+                .init(color: Color(red: 0.1, green: 0.2, blue: 0.45), location: 0.3),
+                .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 0.3)
+            ], center: .top, startRadius: 200, endRadius: 700)
+            .ignoresSafeArea()
             
-            VStack(spacing: 30){
-                VStack {
-                    Text("Tap the flag of")
-                        .foregroundStyle(.white)
-                    Text(countries[correctAnswer])
-                        .foregroundStyle(.white)
-                }
+            VStack {
+                Spacer() // We put spacer views to fit better the entire screen
                 
-                ForEach(0..<3) { number in
-                    // When the button is tapped execute the action
-                    Button {
-                        flagTapped(number)
-                    } label: {
-                        Image(countries[number])
+                // Title
+                Text("Guess the Flag")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
+                
+                // We define the entire outer VStack to take all the horizontal space needed
+                // Then we also set a padding for its components, and a predefined background
+                // Then we also specify a clipShape slightly rounded
+                VStack(spacing: 15) {
+                    VStack {
+                        Text("Tap the flag of")
+                            .foregroundStyle(.secondary) // Use secondary foreground style for some vibrancy
+                            .font(.subheadline.weight(.heavy))
+                        Text(countries[correctAnswer])
+                            .font(.largeTitle.weight(.semibold))
                     }
-                    .alert(scoreTitle, isPresented: $showingScore) {
-                        Button("Continue", action: askQuestion)
-                    } message: {
-                        Text("Your score is ???")
+                    
+                    ForEach(0..<3) { number in
+                        // When the button is tapped execute the action
+                        Button {
+                            flagTapped(number)
+                        } label: {
+                            // The label will be represented by an image
+                            // Set a capsule shape to the image and give it a shadow to make it stand out
+                            Image(countries[number])
+                                .clipShape(.capsule)
+                                .shadow(radius: 5)
+                        }
+                        .alert("Your score is...", isPresented: $showingScore) {
+                            Button("Continue", action: askQuestion)
+                        } message: {
+                            Text("\(scoreTitle.uppercased())!")
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+                .background(.regularMaterial)
+                .clipShape(.rect(cornerRadius: 30))
+                
+                Spacer()
+                Spacer()
+                
+                // Score placeholder
+                Text("Score: ???")
+                    .foregroundStyle(.white)
+                    .font(.title.bold())
+                
+                Spacer()
             }
+            .padding()
         }
     }
     
@@ -231,5 +267,9 @@ struct TestsView: View {
         } message: {
             Text("Please read this.")
         }
+        
+        // Apply a gradient color behind the VStacks
+        LinearGradient(colors: [.blue, .black], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea()
     }
 }
