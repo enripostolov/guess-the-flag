@@ -16,6 +16,14 @@ struct ContentView: View {
     
     @State private var scoreTitle = ""
     
+    @State private var userScore = 0
+    
+    @State private var selectedCountry = ""
+    
+    @State private var remainingDraws = 8
+    @State private var shouldReset = false
+    
+    
     var body: some View {
         ZStack {
             // Apply a radial gradient with two colors starting at the same location
@@ -27,8 +35,6 @@ struct ContentView: View {
             .ignoresSafeArea()
             
             VStack {
-                Spacer() // We put spacer views to fit better the entire screen
-                
                 // Title
                 Text("Guess the Flag")
                     .font(.largeTitle.bold())
@@ -57,10 +63,15 @@ struct ContentView: View {
                                 .clipShape(.capsule)
                                 .shadow(radius: 5)
                         }
-                        .alert("Your score is...", isPresented: $showingScore) {
+                        .alert("Your answer is...", isPresented: $showingScore) {
                             Button("Continue", action: askQuestion)
                         } message: {
-                            Text("\(scoreTitle.uppercased())!")
+                            Text("\(scoreTitle)!\n\n TOTAL SCORE: \(userScore)")
+                        }
+                        .alert("GAME OVER!", isPresented: $shouldReset) {
+                            Button("Play!", action: resetGame)
+                        } message: {
+                            Text("Your final score is: \(userScore). Play again?")
                         }
                     }
                 }
@@ -69,15 +80,20 @@ struct ContentView: View {
                 .background(.regularMaterial)
                 .clipShape(.rect(cornerRadius: 30))
                 
-                Spacer()
-                Spacer()
+                VStack {
+                    // Score placeholder
+                    Text("Score: \(userScore)")
+                        .foregroundStyle(.white)
+                        .font(.title.bold())
+                    
+                    // Trials placeholder
+                    Text("Remaining draws: \(remainingDraws)")
+                        .foregroundStyle(.white)
+                        .font(.title.bold())
+                    
+                }
+                .padding(.vertical, 20)
                 
-                // Score placeholder
-                Text("Score: ???")
-                    .foregroundStyle(.white)
-                    .font(.title.bold())
-                
-                Spacer()
             }
             .padding()
         }
@@ -85,20 +101,38 @@ struct ContentView: View {
     
     // Function to manage the tap on the flag
     func flagTapped(_ number: Int) {
+        // Retrieve the name of the selected country
+        selectedCountry = countries[number]
+        
         // correctAnswer can be checked as it is global to the ContentView
         if number == correctAnswer {
             scoreTitle = "Correct"
+            userScore += 1
         } else {
-            scoreTitle = "Wrong"
+            scoreTitle = "Wrong! You have selected the flag of \(selectedCountry.uppercased())!"
+            userScore = userScore > 0 ? userScore - 1 : 0
         }
         
+        
         showingScore = true
+        remainingDraws -= 1
+        if (remainingDraws == 0){
+            shouldReset = true
+        }
     }
     
     // Function to re-shuffle the array and set a new correct answer for a new game
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+    }
+    
+    // Function to reset the game by re-initializing the total number of available draws and the user score
+    func resetGame() {
+        remainingDraws = 8
+        userScore = 0
+        shouldReset = false
+        askQuestion()
     }
 }
 
